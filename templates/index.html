@@ -132,13 +132,14 @@
         <div class="output">
             <h2>Hasil:</h2>
             <p><strong>Plaintext:</strong> {{ plaintext }}</p>
+            <p><strong>Plaintext Size:</strong> {{ plaintext_size }} bytes</p>
             <p><strong>Ciphertext:</strong> {{ ciphertext }}</p>
             <p><strong>Decrypted Text:</strong> {{ decrypted_text }}</p>
             <p><strong>Encryption Time:</strong> {{ encryption_time }} seconds</p>
             <p><strong>Decryption Time:</strong> {{ decryption_time }} seconds</p>
             <p><strong>Ciphertext Size:</strong> {{ ciphertext_size }} bytes</p>
             <p><strong>Decrypted Text Size:</strong> {{ decrypted_size }} bytes</p>
-        </div>
+        </div>        
 
         <!-- Tombol Unduh Hasil -->
         <form action="/download" method="post">

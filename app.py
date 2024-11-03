@@ -38,6 +38,9 @@ def index():
         aes_choice = request.form['aes_choice']
         key_option = request.form['key_option']
 
+        # Menghitung ukuran plaintext
+        plaintext_size = len(plaintext.encode())  # Menghitung ukuran dalam byte
+
         # Define keys for each kelompok and AES type
         keys = {
             "1": {
@@ -77,29 +80,30 @@ def index():
         decryption_time = time.time() - start_time
         decrypted_size = len(decrypted_text.encode())
 
-        # Prepare file content for download
-        content = (
-            f"Plaintext: {plaintext}\n"
-            f"Ciphertext: {ciphertext}\n"
-            f"Decrypted Text: {decrypted_text}\n"
-            f"Encryption Time: {encryption_time} seconds\n"
-            f"Decryption Time: {decryption_time} seconds\n"
-            f"Ciphertext Size: {ciphertext_size} bytes\n"
-            f"Decrypted Text Size: {decrypted_size} bytes\n"
-        )
+        # Save results to a file
+        filename = f"{key_option}_AES_{aes_choice}_result.txt"
+        with open(filename, "w") as file:
+            file.write(f"Plaintext: {plaintext}\n")
+            file.write(f"Plaintext Size: {plaintext_size} bytes\n")
+            file.write(f"Ciphertext: {ciphertext}\n")
+            file.write(f"Decrypted Text: {decrypted_text}\n")
+            file.write(f"Encryption Time: {encryption_time} seconds\n")
+            file.write(f"Decryption Time: {decryption_time} seconds\n")
+            file.write(f"Ciphertext Size: {ciphertext_size} bytes\n")
+            file.write(f"Decrypted Text Size: {decrypted_size} bytes\n")
 
-        # Create a virtual file in memory
-        file = io.BytesIO(content.encode('utf-8'))
-        file.seek(0)
-
-        # Send file to user as a download
-        return send_file(
-            file,
-            as_attachment=True,
-            download_name="hasil_enkripsi.txt",
-            mimetype='text/plain'
-        )
-
+        return render_template('index.html', 
+                               plaintext=plaintext,
+                               plaintext_size=plaintext_size,
+                               ciphertext=ciphertext,
+                               decrypted_text=decrypted_text,
+                               encryption_time=encryption_time,
+                               decryption_time=decryption_time,
+                               ciphertext_size=ciphertext_size,
+                               decrypted_size=decrypted_size,
+                               aes_choice=aes_choice,
+                               key_option=key_option,
+                               download_link=filename)
     return render_template('index.html')
 
 if __name__ == '__main__':
