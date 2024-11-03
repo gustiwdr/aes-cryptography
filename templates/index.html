@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES Encryption & Decryption</title>
+    <style>
+        /* Atur gaya dasar untuk elemen */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Gaya utama untuk container */
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 450px;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Gaya untuk form input */
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #555;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        /* Tombol untuk enkripsi & dekripsi */
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Gaya untuk hasil output */
+        .output {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .output h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .output p {
+            margin: 5px 0;
+            line-height: 1.5;
+            color: #444;
+        }
+
+        /* Gaya responsif */
+        @media (max-width: 500px) {
+            .container {
+                width: 100%;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AES Encryption & Decryption</h1>
+        <form method="post">
+            <label for="plaintext">Masukkan Teks:</label>
+            <input type="text" id="plaintext" name="plaintext" required>
+
+            <label for="aes_choice">Pilih Panjang Kunci AES:</label>
+            <select id="aes_choice" name="aes_choice">
+                <option value="1">AES-128</option>
+                <option value="2">AES-192</option>
+                <option value="3">AES-256</option>
+            </select>
+
+            <label for="key_option">Pilih Kelompok Kunci:</label>
+            <select id="key_option" name="key_option">
+                <option value="1">Kelompok 1</option>
+                <option value="2">Kelompok 2</option>
+                <option value="3">Kelompok 3</option>
+                <option value="4">Kelompok 4</option>
+            </select>
+
+            <button type="submit">Enkripsi & Dekripsi</button>
+        </form>
+
+        <div class="output">
+            <h2>Hasil:</h2>
+            <p><strong>Plaintext:</strong> {{ plaintext }}</p>
+            <p><strong>Ciphertext:</strong> {{ ciphertext }}</p>
+            <p><strong>Decrypted Text:</strong> {{ decrypted_text }}</p>
+            <p><strong>Encryption Time:</strong> {{ encryption_time }} seconds</p>
+            <p><strong>Decryption Time:</strong> {{ decryption_time }} seconds</p>
+            <p><strong>Ciphertext Size:</strong> {{ ciphertext_size }} bytes</p>
+            <p><strong>Decrypted Text Size:</strong> {{ decrypted_size }} bytes</p>
+        </div>
+
+        <!-- Tombol Unduh Hasil -->
+        <form action="/download" method="post">
+            <input type="hidden" name="plaintext" value="{{ plaintext }}">
+            <input type="hidden" name="ciphertext" value="{{ ciphertext }}">
+            <input type="hidden" name="decrypted_text" value="{{ decrypted_text }}">
+            <button type="submit">Unduh Hasil</button>
+        </form>
+    </div>
+</body>
+</html>
