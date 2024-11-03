@@ -39,29 +39,29 @@ def index():
         key_option = request.form['key_option']
 
         # Menghitung ukuran plaintext
-        plaintext_size = len(plaintext.encode())  # Menghitung ukuran dalam byte
+        plaintext_size = len(plaintext.encode())
 
         # Define keys for each kelompok and AES type
         keys = {
             "1": {
-                "1": b'kelompok 1'.ljust(16),  # AES-128
-                "2": b'kelompok 1'.ljust(24),  # AES-192
-                "3": b'kelompok 1'.ljust(32)   # AES-256
+                "1": b'kelompok 1'.ljust(16),  
+                "2": b'kelompok 1'.ljust(24),  
+                "3": b'kelompok 1'.ljust(32)   
             },
             "2": {
-                "1": b'kelompok 2'.ljust(16),  # AES-128
-                "2": b'kelompok 2'.ljust(24),  # AES-192
-                "3": b'kelompok 2'.ljust(32)   # AES-256
+                "1": b'kelompok 2'.ljust(16),  
+                "2": b'kelompok 2'.ljust(24),  
+                "3": b'kelompok 2'.ljust(32)   
             },
             "3": {
-                "1": b'kelompok 3'.ljust(16),  # AES-128
-                "2": b'kelompok 3'.ljust(24),  # AES-192
-                "3": b'kelompok 3'.ljust(32)   # AES-256
+                "1": b'kelompok 3'.ljust(16),  
+                "2": b'kelompok 3'.ljust(24),  
+                "3": b'kelompok 3'.ljust(32)   
             },
             "4": {
-                "1": b'kelompok 4'.ljust(16),  # AES-128
-                "2": b'kelompok 4'.ljust(24),  # AES-192
-                "3": b'kelompok 4'.ljust(32)   # AES-256
+                "1": b'kelompok 4'.ljust(16),  
+                "2": b'kelompok 4'.ljust(24),  
+                "3": b'kelompok 4'.ljust(32)   
             }
         }
 
@@ -80,31 +80,61 @@ def index():
         decryption_time = time.time() - start_time
         decrypted_size = len(decrypted_text.encode())
 
-        # Save results to a file
-        filename = f"{key_option}_AES_{aes_choice}_result.txt"
-        with open(filename, "w") as file:
-            file.write(f"Plaintext: {plaintext}\n")
-            file.write(f"Plaintext Size: {plaintext_size} bytes\n")
-            file.write(f"Ciphertext: {ciphertext}\n")
-            file.write(f"Decrypted Text: {decrypted_text}\n")
-            file.write(f"Encryption Time: {encryption_time} seconds\n")
-            file.write(f"Decryption Time: {decryption_time} seconds\n")
-            file.write(f"Ciphertext Size: {ciphertext_size} bytes\n")
-            file.write(f"Decrypted Text Size: {decrypted_size} bytes\n")
+        # Save results for download
+        content = (
+            f"Plaintext: {plaintext}\n"
+            f"Plaintext Size: {plaintext_size} bytes\n"
+            f"Ciphertext: {ciphertext}\n"
+            f"Decrypted Text: {decrypted_text}\n"
+            f"Encryption Time: {encryption_time} seconds\n"
+            f"Decryption Time: {decryption_time} seconds\n"
+            f"Ciphertext Size: {ciphertext_size} bytes\n"
+            f"Decrypted Text Size: {decrypted_size} bytes\n"
+        )
 
-        return render_template('index.html', 
-                               plaintext=plaintext,
-                               plaintext_size=plaintext_size,
-                               ciphertext=ciphertext,
-                               decrypted_text=decrypted_text,
-                               encryption_time=encryption_time,
-                               decryption_time=decryption_time,
-                               ciphertext_size=ciphertext_size,
-                               decrypted_size=decrypted_size,
-                               aes_choice=aes_choice,
-                               key_option=key_option,
-                               download_link=filename)
+        # Simpan file ke memori untuk diunduh
+        download_file = io.BytesIO(content.encode('utf-8'))
+        download_file.seek(0)
+
+        return render_template(
+            'index.html', 
+            plaintext=plaintext,
+            plaintext_size=plaintext_size,
+            ciphertext=ciphertext,
+            decrypted_text=decrypted_text,
+            encryption_time=encryption_time,
+            decryption_time=decryption_time,
+            ciphertext_size=ciphertext_size,
+            decrypted_size=decrypted_size,
+            aes_choice=aes_choice,
+            key_option=key_option,
+            download_link=True  # Indikator untuk download link
+        )
     return render_template('index.html')
+
+@app.route('/download', methods=['POST'])
+def download():
+    # Ambil data dari form di halaman
+    plaintext = request.form.get('plaintext')
+    ciphertext = request.form.get('ciphertext')
+    decrypted_text = request.form.get('decrypted_text')
+
+    # Isi file hasil
+    content = (
+        f"Plaintext: {plaintext}\n"
+        f"Ciphertext: {ciphertext}\n"
+        f"Decrypted Text: {decrypted_text}\n"
+    )
+    file = io.BytesIO(content.encode('utf-8'))
+    file.seek(0)
+
+    # Kirim file ke pengguna dengan nama `hasil_enkripsi.txt`
+    return send_file(
+        file,
+        as_attachment=True,
+        download_name="hasil_enkripsi.txt",
+        mimetype='text/plain'
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,8 +1,0 @@
-Plaintext: testing
-Plaintext Size: 7 bytes
-Ciphertext: r8Cob4NeR4lD12kozavniMfYksYUme4wv44NrH4uabc=
-Decrypted Text: testing
-Encryption Time: 0.0013606548309326172 seconds
-Decryption Time: 7.534027099609375e-05 seconds
-Ciphertext Size: 32 bytes
-Decrypted Text Size: 7 bytes
