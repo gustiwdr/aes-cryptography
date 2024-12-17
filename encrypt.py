@@ -22,7 +22,6 @@ else:
     print("Pilihan tidak valid.")
     exit()
 
-
 data = input("Masukkan data yang akan dienkripsi: ").encode('utf-8')
 
 # Input key dan validasi panjangnya
