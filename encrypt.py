@@ -8,7 +8,6 @@ print("1. AES-128 (16 karakter key)")
 print("2. AES-192 (24 karakter key)")
 print("3. AES-256 (32 karakter key)")
 
-
 aes_type = input("Masukkan pilihan (1/2/3): ")
 key_length = None
 
