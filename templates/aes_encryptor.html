@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES Encryptor & Decryptor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .metadata {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>AES File Encryptor & Decryptor</h1>
+        <form id="aes-form" method="POST" enctype="multipart/form-data">
+            <label for="aes-type">Pilih Tipe AES:</label>
+            <select id="aes-type" name="aes_type">
+                <option value="AES-128">AES-128 (16 karakter key)</option>
+                <option value="AES-192">AES-192 (24 karakter key)</option>
+                <option value="AES-256">AES-256 (32 karakter key)</option>
+            </select>
+            <label for="key">Masukkan Key:</label>
+            <input type="text" id="key" name="key" placeholder="Key sesuai panjang tipe AES" required>
+            <label for="input-file">Pilih File Input:</label>
+            <input type="file" id="input-file" name="input_file" required>
+            <label for="output-file">Nama File Output:</label>
+            <input type="text" id="output-file" name="output_file" placeholder="Nama file output" required>
+            <button type="button" onclick="submitForm('encrypt')">Encrypt</button>
+            <button type="button" onclick="submitForm('decrypt')">Decrypt</button>
+        </form>
+        <div id="result" class="metadata" style="display: none;"></div>
+    </div>
+    <script>
+        function submitForm(operation) {
+            const form = document.getElementById('aes-form');
+            const formData = new FormData(form);
+            formData.append('operation', operation);
+            fetch('/process', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('result');
+                    resultDiv.style.display = 'block';
+                    if (data.error) {
+                        resultDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <p>${data.message}</p>
+                            <p>Ukuran File Sebelum: ${data.input_file_size} bytes</p>
+                            <p>Ukuran File Setelah: ${data.output_file_size} bytes</p>
+                            <p>Waktu Proses: ${data.process_time} detik</p>
+                            <p><a href="/download/${data.output_file}" target="_blank">Unduh File Hasil</a></p>
+                        `;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+
+</html>
