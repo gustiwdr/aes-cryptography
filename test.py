@@ -34,6 +34,7 @@ def encrypt_file(key, input_file_path, output_file_path):
     with open(output_file_path, 'wb') as file:
         file.write(nonce + ciphertext)
 
+    print(f"[ENCRYPTION] Nonce: {nonce}, Ciphertext Length: {len(ciphertext)}")  # Debug log
     return encryption_time
 
 # Fungsi untuk mendekripsi file
@@ -54,6 +55,7 @@ def decrypt_file(key, input_file_path, output_file_path):
     with open(output_file_path, 'wb') as file:
         file.write(plaintext)
 
+    print(f"[DECRYPTION] Nonce: {nonce}, Plaintext Length: {len(plaintext)}")  # Debug log
     return decryption_time
 
 # Route untuk halaman utama
