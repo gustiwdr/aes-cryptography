@@ -18,7 +18,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def get_file_size(file_path):
     return os.path.getsize(file_path)
 
-# Fungsi untuk mengenkripsi file
+# Fungsi untuk mengenkripsi file menjadi teks terenkripsi
 def encrypt_file(key, input_file_path, output_file_path):
     with open(input_file_path, 'rb') as file:
         data = file.read()
@@ -30,20 +30,20 @@ def encrypt_file(key, input_file_path, output_file_path):
     ciphertext = cipher.encrypt(data)
     encryption_time = time.time() - start_time
 
-    # Menyimpan nonce dan ciphertext dalam satu file
+    # Gabungkan nonce dengan ciphertext dan simpan ke file
     with open(output_file_path, 'wb') as file:
         file.write(nonce + ciphertext)
 
-    print(f"[ENCRYPTION] Nonce: {nonce}, Ciphertext Length: {len(ciphertext)}")  # Debug log
-    return encryption_time
+    return encryption_time, len(data), get_file_size(output_file_path)
 
-# Fungsi untuk mendekripsi file
+# Fungsi untuk mendekripsi file terenkripsi
+
 def decrypt_file(key, input_file_path, output_file_path):
     with open(input_file_path, 'rb') as file:
-        data = file.read()
+        encrypted_data = file.read()
 
-    nonce = data[:8]
-    ciphertext = data[8:]
+    nonce = encrypted_data[:8]
+    ciphertext = encrypted_data[8:]
 
     cipher = AES.new(key, AES.MODE_CTR, nonce=nonce)
 
@@ -51,12 +51,11 @@ def decrypt_file(key, input_file_path, output_file_path):
     plaintext = cipher.decrypt(ciphertext)
     decryption_time = time.time() - start_time
 
-    # Menulis kembali plaintext ke file
+    # Tulis kembali plaintext ke file
     with open(output_file_path, 'wb') as file:
         file.write(plaintext)
 
-    print(f"[DECRYPTION] Nonce: {nonce}, Plaintext Length: {len(plaintext)}")  # Debug log
-    return decryption_time
+    return decryption_time, get_file_size(output_file_path)
 
 # Route untuk halaman utama
 @app.route('/')
@@ -69,7 +68,7 @@ def process():
     aes_type = request.form.get('aes_type')
     key = request.form.get('key')
     operation = request.form.get('operation')
-    input_file = request.files['input_file']
+    input_file = request.files.get('input_file')
     output_file_name = request.form.get('output_file')
 
     key_lengths = {"AES-128": 16, "AES-192": 24, "AES-256": 32}
@@ -78,35 +77,47 @@ def process():
     if len(key) != key_length:
         return jsonify({"error": f"Key harus {key_length} karakter."}), 400
 
-    input_file_path = os.path.join(UPLOAD_FOLDER, input_file.filename)
-    output_file_path = os.path.join(UPLOAD_FOLDER, output_file_name)
-    input_file.save(input_file_path)
-
     key_bytes = key.encode('utf-8')
 
     try:
         if operation == "encrypt":
-            process_time = encrypt_file(key_bytes, input_file_path, output_file_path)
+            if not input_file:
+                return jsonify({"error": "File input diperlukan untuk enkripsi."}), 400
+
+            input_file_path = os.path.join(UPLOAD_FOLDER, input_file.filename)
+            output_file_path = os.path.join(UPLOAD_FOLDER, f"encrypted_{input_file.filename}")
+            input_file.save(input_file_path)
+
+            process_time, input_size, output_size = encrypt_file(key_bytes, input_file_path, output_file_path)
+            return jsonify({
+                "message": "File berhasil terenkripsi.",
+                "process_time": f"{process_time:.6f} detik",
+                "input_file_size": f"{input_size} bytes",
+                "output_file_size": f"{output_size} bytes",
+                "download_link": f"/download/{os.path.basename(output_file_path)}"
+            })
+
         elif operation == "decrypt":
-            process_time = decrypt_file(key_bytes, input_file_path, output_file_path)
+            if not input_file:
+                return jsonify({"error": "File input terenkripsi diperlukan untuk dekripsi."}), 400
+
+            input_file_path = os.path.join(UPLOAD_FOLDER, input_file.filename)
+            output_file_path = os.path.join(UPLOAD_FOLDER, output_file_name)
+            input_file.save(input_file_path)
+
+            process_time, output_size = decrypt_file(key_bytes, input_file_path, output_file_path)
+            return jsonify({
+                "message": "File berhasil didekripsi.",
+                "process_time": f"{process_time:.6f} detik",
+                "output_file_size": f"{output_size} bytes",
+                "download_link": f"/download/{os.path.basename(output_file_path)}"
+            })
+
         else:
             return jsonify({"error": "Operasi tidak valid."}), 400
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-    input_file_size = get_file_size(input_file_path)
-    output_file_size = get_file_size(output_file_path)
-
-    result_message = f"File berhasil {'terenkripsi' if operation == 'encrypt' else 'terdekripsi'}."
-
-    return jsonify({
-        "message": result_message,
-        "process_time": f"{process_time:.6f} detik",
-        "input_file_size": input_file_size,
-        "output_file_size": output_file_size,
-        "output_file": output_file_name,
-        "download_link": f"/download/{output_file_name}"
-    })
 
 # Route untuk mengunduh file
 @app.route('/download/<filename>', methods=['GET'])
@@ -116,5 +127,5 @@ def download(filename):
         return "File tidak ditemukan.", 404
     return send_file(file_path, as_attachment=True)
 
-if __name__ == '__main__':
+if __name__ == '_main_':
     app.run(debug=True)
