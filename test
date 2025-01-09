@@ -1,0 +1,83 @@
+def encrypt_file():
+    filepath = file_entry.get()
+    plaintext = plaintext_entry.get()
+
+    if not filepath and not plaintext:
+        messagebox.showerror("Error", "Masukkan file atau teks biasa untuk dienkripsi!")
+        return
+
+    # Validasi dan dapatkan kunci
+    key = validate_and_get_key()
+    if not key:
+        return
+
+    method = method_var.get()
+    key_length = 16 if method == "AES-128" else 24 if method == "AES-192" else 32
+
+    try:
+        if manual_key_var.get():
+            # Validasi kunci manual
+            try:
+                key = bytes.fromhex(key_entry.get())
+                if len(key) != key_length:
+                    raise ValueError(f"Kunci harus {key_length * 8} bit dalam format hex.")
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+                return
+        else:
+            # Generate kunci otomatis
+            key = os.urandom(key_length)
+            key_entry.config(state=NORMAL)
+            key_entry.delete(0, END)
+            key_entry.insert(0, key.hex())
+            key_entry.config(state="readonly")
+
+        start_time = time.time()
+
+        if filepath:
+            # Enkripsi file
+            with open(filepath, 'rb') as f:
+                file_data = f.read()
+            file_name = os.path.basename(filepath).encode()
+            file_name_length = len(file_name)
+
+            # Gabungkan nama file dan konten file
+            data_with_name = file_name_length.to_bytes(2, 'big') + file_name + file_data
+            encrypted_data = encrypt_data(key, data_with_name)
+            enc_file_path = filepath + '.enc'
+
+            with open(enc_file_path, 'wb') as f:
+                f.write(encrypted_data)
+
+            duration = time.time() - start_time
+            messagebox.showinfo(
+                "Sukses",
+                f"File berhasil dienkripsi!\n"
+                f"File asli: {len(file_data)} bytes\n"
+                f"File terenkripsi: {len(encrypted_data)} bytes\n"
+                f"Waktu: {duration:.4f} detik\n"
+                f"Disimpan di: {enc_file_path}"
+            )
+        else:
+            # Enkripsi teks biasa
+            plaintext_bytes = plaintext.encode()
+            encrypted_data = encrypt_data(key, plaintext_bytes)
+            enc_file_path = "plaintext.enc"
+
+            with open(enc_file_path, 'wb') as f:
+                f.write(encrypted_data)
+
+            duration = time.time() - start_time
+            messagebox.showinfo(
+                "Sukses",
+                f"Teks berhasil dienkripsi!\n"
+                f"Teks asli: {len(plaintext_bytes)} bytes\n"
+                f"Teks terenkripsi: {len(encrypted_data)} bytes\n"
+                f"Waktu: {duration:.4f} detik\n"
+                f"Disimpan di: {enc_file_path}"
+            )
+
+        reset_form()
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Terjadi kesalahan saat enkripsi: {str(e)}")
